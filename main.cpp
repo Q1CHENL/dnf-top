@@ -1,60 +1,50 @@
 #include <iostream>
 #include <map>
-#include <deque>
 #include <string>
 #include <cstring>
 
 int main() {
     //note: in clion terminal output is incomplete
-    FILE *install_stream = popen("dnf history | grep 'install' | awk '{print $4}' | sort -u", "r");
     FILE *history_stream = popen("dnf history", "r");
-    if (!install_stream) {
-        std::cerr << "Failed to execute command\n";
-        return EXIT_FAILURE;
-    }
 
-    char install_buffer[256];
     char history_buffer[256];
-    std::map<int, std::pair<std::string, int>> package_map;
-
-    int i = 0;
-    while (fgets(install_buffer, sizeof(install_buffer), install_stream) != nullptr) {
-        install_buffer[strlen(install_buffer) - 1] = '\0';
-        package_map.insert(std::pair(i, std::pair<std::string, int>(install_buffer, 0)));
-        i++;
-    }
-
-    std::deque<std::string> reverse_history;
-    while (fgets(history_buffer, sizeof(history_buffer), history_stream) != NULL) {
-        reverse_history.emplace_front(history_buffer);
-    }
+    std::map<std::string, bool> package_map;
 
     bool install;
     bool remove;
-    for (const auto& line : reverse_history) {
-        install = line.find("install") != std::string::npos || line.find("reinstall") != std::string::npos;
-        remove = line.find("remove") != std::string::npos ;
-        if(!install && !remove){ continue;}
-        for (int k = 0; k < package_map.size(); ++k) {
-            if (line.find(package_map.at(k).first)!= std::string::npos) {
-                if (remove) {
-                    package_map.at(k).second--;
-                } else {
-                    package_map.at(k).second++;
-                }
+
+    std::string line;
+    std::string name_t;
+
+    //if appear second time just sip because we only cares about the last time of remove/install
+    while (fgets(history_buffer, sizeof(history_buffer), history_stream) != NULL) {
+        line = history_buffer;
+        install = line.find(" install ") != std::string::npos || line.find(" reinstall ") != std::string::npos;
+        remove = line.find(" remove ") != std::string::npos;
+        if (install) {
+            name_t = line.substr(line.find("install") + 8);
+            name_t.erase(name_t.find_first_of(' '));
+            if (package_map.find(name_t) == package_map.end()) {
+                package_map.insert({name_t, false});
+            }
+        } else if (remove){
+            name_t = line.substr(line.find("remove") + 7);
+            name_t.erase(name_t.find_first_of(' '));
+            if (package_map.find(name_t) == package_map.end()) {
+                package_map.insert({name_t, true});
             }
         }
     }
-
-    //print in alphabetical order
-    for (auto & it : package_map) {
-        if(it.second.second >= 1){
-            std::cout << it.second.first << std::endl;
+    // print in alphabetical order
+    for (auto &it: package_map) {
+        if (!it.second) {
+            std::cout << it.first << std::endl;
         }
     }
 
     pclose(history_stream);
-    pclose(install_stream);
     return EXIT_SUCCESS;
 }
+
+
 
