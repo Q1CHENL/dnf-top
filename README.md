@@ -1,2 +1,3 @@
 # dnf-leaves
-Since it's based on the text ouput of `dnf history`, it lists not only the package name, but also repo links.
+1.It's based on the text ouput of `dnf history` <br />
+2.Not only the package name, but also repo links will be listed.
