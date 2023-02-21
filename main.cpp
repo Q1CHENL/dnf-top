@@ -1,7 +1,8 @@
 #include <iostream>
 #include <map>
-#include <string>
 #include <cstring>
+#include <vector>
+#include <sstream>
 
 int main() {
     //note: in clion terminal output is incomplete
@@ -14,7 +15,8 @@ int main() {
     bool remove;
 
     std::string line;
-    std::string name_t;
+    std::string names_all;
+    std::string name;
 
     //if appear second time just sip because we only cares about the last time of remove/install
     while (fgets(history_buffer, sizeof(history_buffer), history_stream) != NULL) {
@@ -22,29 +24,45 @@ int main() {
         install = line.find(" install ") != std::string::npos || line.find(" reinstall ") != std::string::npos;
         remove = line.find(" remove ") != std::string::npos;
         if (install) {
-            name_t = line.substr(line.find("install") + 8);
-            name_t.erase(name_t.find_first_of(' '));
-            if (package_map.find(name_t) == package_map.end()) {
-                package_map.insert({name_t, false});
+            names_all = line.substr(line.find("install") + 8);
+            names_all.erase(names_all.find_first_of('|'));
+            std::stringstream ss(names_all);
+            while(ss >> name) {
+                if(name.find(".x86_64") != std::string::npos){
+                    name.erase(name.find_first_of(".x86_64"));
+                }
+                if (name[0] != '-' && package_map.find(name) == package_map.end()) {
+                    package_map.insert({name, false});
+                }
             }
         } else if (remove){
-            name_t = line.substr(line.find("remove") + 7);
-            name_t.erase(name_t.find_first_of(' '));
-            if (package_map.find(name_t) == package_map.end()) {
-                package_map.insert({name_t, true});
+            names_all = line.substr(line.find("remove") + 7);
+            names_all.erase(names_all.find_first_of('|'));
+            std::stringstream ss(names_all);
+            while(ss >> name) {
+                if(name.find(".x86_64") != std::string::npos){
+                    name.erase(name.find_first_of(".x86_64"));
+                }
+                if (package_map.find(name) == package_map.end()) {
+                    package_map.insert({name, true});
+                }
             }
         }
     }
+    pclose(history_stream);
+    int num = 0;
     // print in alphabetical order
     for (auto &it: package_map) {
         if (!it.second) {
             std::cout << it.first << std::endl;
+            num++;
         }
     }
-
-    pclose(history_stream);
+    std::cout << "[Total installed: " << num <<" top level packages]" << std::endl;
     return EXIT_SUCCESS;
 }
+
+
 
 
 
