@@ -1,68 +1,66 @@
 #include <iostream>
-#include <map>
-#include <cstring>
 #include <vector>
 #include <sstream>
+#include <set>
 
 int main() {
     //note: in clion terminal output is incomplete
-    FILE *history_stream = popen("dnf history", "r");
+    FILE *history = popen("dnf history", "r");
+    if (history == nullptr) {
+        std::cerr << "Error: Failed to open history stream.\n";
+        return EXIT_FAILURE;
+    }
 
-    char history_buffer[256];
-    std::map<std::string, bool> package_map;
-
-    bool install;
-    bool remove;
-
-    std::string line;
-    std::string names_all;
-    std::string name;
+    char line_buf[256];
+    std::set<std::string> package_set;
+    int num = 0;
+    std::string suffix_x86_64 = ".x86_64";
 
     //if appear second time just sip because we only cares about the last time of remove/install
-    while (fgets(history_buffer, sizeof(history_buffer), history_stream) != NULL) {
-        line = history_buffer;
-        install = line.find(" install ") != std::string::npos || line.find(" reinstall ") != std::string::npos;
-        remove = line.find(" remove ") != std::string::npos;
+    while (fgets(line_buf, sizeof(line_buf), history) != nullptr) {
+        std::string line = line_buf;
+        bool install = line.find(" install ") != std::string::npos || line.find(" reinstall ") != std::string::npos;
+        bool remove = line.find(" remove ") != std::string::npos;
+
+        std::string names;
+        std::string single_name;
+
         if (install) {
-            names_all = line.substr(line.find("install") + 8);
-            names_all.erase(names_all.find_first_of('|'));
-            std::stringstream ss(names_all);
-            while(ss >> name) {
-                if(name.find(".x86_64") != std::string::npos){
-                    name.erase(name.find_first_of(".x86_64"));
+            names = line.substr(line.find("install") + 8);
+            names.erase(names.find_first_of('|'));
+            std::stringstream ss(names);
+            while (ss >> single_name) {
+                if (single_name.find(suffix_x86_64) != std::string::npos) {
+                    single_name.erase(single_name.find_first_of(suffix_x86_64));
                 }
-                if (name[0] != '-' && package_map.find(name) == package_map.end()) {
-                    package_map.insert({name, false});
+                if (single_name[0] != '-' && package_set.count(single_name) == 0) {
+                    package_set.insert(single_name);
+                    std::cout << single_name << std::endl;
+                    num++;
                 }
             }
-        } else if (remove){
-            names_all = line.substr(line.find("remove") + 7);
-            names_all.erase(names_all.find_first_of('|'));
-            std::stringstream ss(names_all);
-            while(ss >> name) {
-                if(name.find(".x86_64") != std::string::npos){
-                    name.erase(name.find_first_of(".x86_64"));
+        } else if (remove) {
+            names = line.substr(line.find("remove") + 7);
+            names.erase(names.find_first_of('|'));
+            std::stringstream ss(names);
+            while (ss >> single_name) {
+                if (single_name.find(suffix_x86_64) != std::string::npos) {
+                    single_name.erase(single_name.find_first_of(suffix_x86_64));
                 }
-                if (package_map.find(name) == package_map.end()) {
-                    package_map.insert({name, true});
+                if (package_set.count(single_name) == 0) {
+                    package_set.insert(single_name);
                 }
             }
         }
     }
-    pclose(history_stream);
-    int num = 0;
-    // print in alphabetical order
-    for (auto &it: package_map) {
-        if (!it.second) {
-            std::cout << it.first << std::endl;
-            num++;
-        }
-    }
-    std::cout << "[Total installed: " << num <<" top level packages]" << std::endl;
+    pclose(history);
+//     print in alphabetical order
+//    for (auto &it: package_set) {
+//        if (!it.second) {
+//            std::cout << it.first << std::endl;
+//            num++;
+//        }
+//    }
+    std::cout << "[Total installed: " << num << " top level packages]" << std::endl;
     return EXIT_SUCCESS;
 }
-
-
-
-
-
