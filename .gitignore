@@ -1,4 +1,5 @@
 .idea
 .vscode
+.history
 build
 cmake-build-debug
