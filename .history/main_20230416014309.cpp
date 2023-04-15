@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
                 }
                 if (single_name[0] != '-' && package_set.count(single_name) == 0) {
                     package_set.insert(single_name);
-                    // add to the final vector
                     final_result.emplace_back(single_name);
+                    // std::cout << single_name << std::endl;
                     num++;
                 }
             }
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     }
     pclose(history);
     
-    // should print in reverse order
+    // print in reverse order?
     if (reverse_order) {
         std::reverse(final_result.begin(), final_result.end());
     }

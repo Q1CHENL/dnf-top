@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
                 }
                 if (single_name[0] != '-' && package_set.count(single_name) == 0) {
                     package_set.insert(single_name);
-                    // add to the final vector
                     final_result.emplace_back(single_name);
+                    // std::cout << single_name << std::endl;
                     num++;
                 }
             }

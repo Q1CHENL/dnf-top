@@ -1,15 +1,14 @@
-#include <algorithm>
 #include <iostream>
-#include <set>
-#include <sstream>
 #include <vector>
+#include <sstream>
+#include <set>
 
-int main(int argc, char *argv[]) {
+int main() {
     bool reverse_order = false;
     if (argc == 2 && std::string(argv[1]) == "--reverse") {
         reverse_order = true;
     }
-    // note: in clion terminal output is incomplete
+    //note: in clion terminal output is incomplete
     FILE *history = popen("dnf history", "r");
     if (history == nullptr) {
         std::cerr << "Error: Failed to open history stream.\n";
@@ -22,7 +21,7 @@ int main(int argc, char *argv[]) {
     int num = 0;
     std::string suffix_x86_64 = ".x86_64";
 
-    // if appear second time just sip because we only cares about the last time of remove/install
+    //if appear second time just sip because we only cares about the last time of remove/install
     while (fgets(line_buf, sizeof(line_buf), history) != nullptr) {
         std::string line = line_buf;
         bool install = line.find(" install ") != std::string::npos || line.find(" reinstall ") != std::string::npos;
@@ -41,8 +40,7 @@ int main(int argc, char *argv[]) {
                 }
                 if (single_name[0] != '-' && package_set.count(single_name) == 0) {
                     package_set.insert(single_name);
-                    // add to the final vector
-                    final_result.emplace_back(single_name);
+                    std::cout << single_name << std::endl;
                     num++;
                 }
             }
@@ -61,15 +59,13 @@ int main(int argc, char *argv[]) {
         }
     }
     pclose(history);
-    
-    // should print in reverse order
-    if (reverse_order) {
-        std::reverse(final_result.begin(), final_result.end());
-    }
-    for (auto &str : final_result) {
-        std::cout << str << std::endl;
-    }
-
+//     print in alphabetical order
+//    for (auto &it: package_set) {
+//        if (!it.second) {
+//            std::cout << it.first << std::endl;
+//            num++;
+//        }
+//    }
     std::cout << "[Total installed: " << num << " top level packages]" << std::endl;
     return EXIT_SUCCESS;
 }
