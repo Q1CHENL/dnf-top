@@ -4,4 +4,4 @@ set(CMAKE_CXX_FLAGS -O3)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(dnleaf main.cpp)
+add_executable(dnleaf dnleaf-old.cpp)
