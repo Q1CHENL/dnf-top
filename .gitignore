@@ -3,6 +3,6 @@
 .history
 build
 cmake-build-debug
-dnleaf
+dnf-top
 CMakeLists.txt
 dnleaf-old.cpp
