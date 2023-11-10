@@ -1,12 +1,22 @@
-all: dnleaf
+all: dnf-top
 
-dnleaf: dnleaf.py
+dnf-top: dnf_top.py
 	# Adding shebang to dnleaf.py and creating the executable
-	echo "#!/usr/bin/env python3" > dnleaf
-	cat dnleaf.py >> dnleaf
-	chmod +x dnleaf
+	echo "#!/usr/bin/env python3" > dnf-top
+	cat dnleaf.py >> dnf-top
+	chmod +x dnf-top
 
 clean:
-	rm -f dnleaf
+	rm -f dnf-top
+
+install:
+	echo "#!/usr/bin/env python3" > dnf-top
+	cat dnleaf.py >> dnf-top
+	chmod +x dnf-top
+	sudo cp dnf-top /usr/local/bin/dnf-top
+
+uninstall:
+	sudo rm /usr/local/bin/dnf-top
+	
 
 .PHONY: all clean install uninstall
