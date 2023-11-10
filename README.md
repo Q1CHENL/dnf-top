@@ -1,2 +1,3 @@
-# dnf_top
-It's based on the text ouput of `dnf history`.
+# dnf-top
+- List top level packages installed by `dnf install`
+- It's based on the text ouput of `dnf history`
